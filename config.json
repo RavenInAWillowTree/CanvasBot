@@ -4,6 +4,7 @@
     "extensions": [
         {
             "name": "utilities",
+            "lib": "builtin",
             "enabled": true
         }
     ]

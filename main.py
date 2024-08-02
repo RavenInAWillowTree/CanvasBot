@@ -3,6 +3,7 @@ from tabulate import tabulate
 import lightbulb
 import json
 import os
+import ast
 
 
 def change_display(display):
@@ -32,23 +33,25 @@ def change_token(token):
 
 def toggle_extension(config_data):
     while True:
-        # list extensions
-        extension_list = os.listdir("extensions")
-        extension_table = []
-        for extension in config_data['extensions']:
-            name, enabled = extension['name'], extension['enabled']
-            if extension['name'] in extension_list:
-                if os.path.exists(f"extensions/{extension['name']}/main.py"):
-                    if extension['enabled']:
-                        extension_table.append([f"{Fore.GREEN}{name}", "valid", f"{enabled}{Fore.RESET}"])
-                    else:
-                        extension_table.append([f"{Fore.YELLOW}{name}", "valid", f"{enabled}{Fore.RESET}"])
-                else:
-                    extension_table.append([f"{Fore.RED}{name}", "missing main.py", f"{enabled}{Fore.RESET}"])
-            else:
-                extension_table.append([f"{Fore.RED}{name}", "defined but missing", f"{enabled}{Fore.RESET}"])
-        print(f"Extensions:\n{tabulate(extension_table, headers=['Name', 'Status', 'Enabled'])}\n")
-
+        # list all extensions
+        ext_list = get_extensions(config_data)
+        ext_table = []
+        for ext in ext_list:
+            enabled = "enabled" if ext[2] else "disabled"
+            enabled_color = Fore.GREEN if ext[2] else Fore.YELLOW
+            match ext[1]:
+                case 0:
+                    ext_table.append([f"{enabled_color}{ext[0]}", "valid", f"{enabled}{Fore.RESET}"])
+                case 1:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "invalid plugin", f"{enabled}{Fore.RESET}"])
+                case 2:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "missing main.py", f"{enabled}{Fore.RESET}"])
+                case 3:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "defined but missing", f"{enabled}{Fore.RESET}"])
+                case 4:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "undefined", f"{enabled}{Fore.RESET}"])
+        print(f"Extensions:\n{tabulate(ext_table, headers=['Name', 'Status', 'Enabled'])}\n")
+                    
         selected = input("Select extension to toggle (or q to cancel):\n")
         found = False
         if selected == "q":
@@ -61,10 +64,66 @@ def toggle_extension(config_data):
                 found = True
                 break
         if not found:
-            print("Select a valid option")
+            print("Select a valid extension")
             continue
         else:
             return config_data
+
+
+def get_extensions(config_data):
+    # find and categorise extensions by state
+    # helper function
+    def validate_plugin(name):
+        load_found, unload_found = False, False
+        with open(f"extensions/{name}/main.py", "r") as f:
+            tree = ast.parse(f.read())
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    if node.name == "load":
+                        load_found = True
+                    if node.name == "unload":
+                        unload_found = True
+            if load_found and unload_found:
+                return True
+            else:
+                return False
+
+    # get extensions both defined and in files
+    ext_list = []
+    # state:
+    #   0: valid and functional!
+    #   1: missing load or unload function
+    #   2: missing main.py
+    #   3: missing but defined in config.json
+    #   4: found but not defined in config.json
+    ext_list_dir = os.listdir("extensions")
+    ext_list_def = config_data['extensions']
+    # first check extensions defined in the config file
+    for ext in ext_list_def:
+        name, enabled = ext['name'], ext['enabled']
+        state = 0
+        if os.path.exists(f"extensions/{name}"):
+            if os.path.exists(f"extensions/{name}/main.py"):
+                if validate_plugin(name):
+                    state = 0
+                else:
+                    state = 1
+            else:
+                state = 2
+        else:
+            state = 3
+        ext_list.append([name, state, enabled])
+    # check the extensions director for any undefined
+    for ix, ext in enumerate(ext_list_dir):
+        found = False
+        for saved in ext_list:
+            if ext == saved[0]:
+                found = True
+                break
+        if not found:
+            ext_list.append([ext, 4, False])
+    # return results
+    return ext_list
 
 
 # ----- main script -----
@@ -80,14 +139,14 @@ Made with {Fore.BLUE}CanvasBot{Fore.RESET}
 
 # initial options menu
 while True:
-    choice = 0
     try:
         print("""
 Bot Options:
 (1): Run Bot
 (2): Change Display Name
 (3): Change Token
-(4): Enable/Disable Extension""")
+(4): Enable/Disable Extension
+(5): Quit""")
         choice = int(input(""))
 
         match choice:
@@ -100,6 +159,8 @@ Bot Options:
                 config_data['token'] = change_token(config_data['token'])
             case 4:
                 config_data = toggle_extension(config_data)
+            case 5:  # quit
+                exit()
             case _:
                 print("Please choose from one of the options listed")
 
