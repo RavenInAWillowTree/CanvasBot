@@ -83,7 +83,7 @@ while True:
     choice = 0
     try:
         print("""
-Select a function:
+Bot Options:
 (1): Run Bot
 (2): Change Display Name
 (3): Change Token
@@ -92,6 +92,7 @@ Select a function:
 
         match choice:
             case 1:  # stop loop and run bot
+                print("Running bot...")
                 break
             case 2:
                 config_data['displayName'] = change_display(config_data['displayName'])
