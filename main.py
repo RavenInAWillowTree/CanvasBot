@@ -164,6 +164,7 @@ Bot Options:
 # set up the bot
 bot = lightbulb.BotApp(
     token=os.environ['TOKEN'],
+    prefix="cvs!",
     logs={
         "version": 1,
         "incremental": True,

@@ -8,6 +8,10 @@
             "enabled": true
         },
         {
+            "name": "CanvasPlayer",
+            "enabled": true
+        },
+        {
             "name": "built-in",
             "enabled": true
         },

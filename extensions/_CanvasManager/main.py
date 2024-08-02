@@ -1,4 +1,4 @@
-from hikari import Embed, Color
+from hikari import Embed, Color, File
 import lightbulb
 import json
 
@@ -32,14 +32,4 @@ async def canvas_manager() -> None:
 @lightbulb.command("show_config", "display canvas config json")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def show_config(ctx: lightbulb.Context):
-    with open("config.json", "r") as f:
-        config = json.load(f)
-        body = json.dumps(config, indent=4)
-    message = Embed(
-        color=Color.from_hex_code(default_embed_color),
-        title="# Canvas config.json",
-        description=f"""```JSON
-{body}
-```"""
-    )
-    await ctx.respond(message)
+    await ctx.respond(File('config.json'))

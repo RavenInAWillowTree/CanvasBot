@@ -1,6 +1,6 @@
 import json
 import lightbulb
-from hikari import Embed, Color
+from hikari import Embed, Color, File
 
 # plugin setup
 plugin = lightbulb.Plugin("ask")
@@ -69,7 +69,7 @@ async def ask_question(ctx: lightbulb.Context) -> None:
 @lightbulb.option("content", "question response")
 @lightbulb.option("key", "question key")
 @lightbulb.command("edit", "add or change a response")
-@lightbulb.implements(lightbulb.SlashSubGroup)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def ask_edit(ctx: lightbulb.Context) -> None:
     try:
         with open("extensions/ask/data.json", "r") as f:
@@ -90,7 +90,7 @@ async def ask_edit(ctx: lightbulb.Context) -> None:
 @ask_settings.child
 @lightbulb.option("key", "question key")
 @lightbulb.command("remove", "remove a response")
-@lightbulb.implements(lightbulb.SlashSubGroup)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def ask_remove(ctx: lightbulb.Context) -> None:
     try:
         with open("extensions/ask/data.json", "r") as f:
@@ -104,3 +104,11 @@ async def ask_remove(ctx: lightbulb.Context) -> None:
         await ctx.respond(jdata['builtin']['remove_failed'])
     else:
         await ctx.respond(jdata['builtin']['remove_success'])
+
+
+# show ask data.json
+@ask_settings.child
+@lightbulb.command("show_config", "display canvas config json")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def show_config(ctx: lightbulb.Context):
+    await ctx.respond(File('extensions/ask/data.json'))
