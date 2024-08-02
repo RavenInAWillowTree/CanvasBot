@@ -1,10 +1,18 @@
 {
     "displayName": "YourBotNameHere",
-    "token": "MTI0MjUzNzY4NTgxMDQxNzc5NA.G6DEdx.D24yzx0EDtyQ7X4QG5k5yzsGgwDKzZ3_OYEiao",
+    "default_color": "#009FFF",
+    "admin_role_id": 1083524896417665156,
     "extensions": [
         {
-            "name": "utilities",
-            "lib": "builtin",
+            "name": "_CanvasManager",
+            "enabled": true
+        },
+        {
+            "name": "built-in",
+            "enabled": true
+        },
+        {
+            "name": "ask",
             "enabled": true
         }
     ]

@@ -1,0 +1,13 @@
+{
+  "builtin": {
+    "help_header": "All Keys",
+    "key_404": "key not found",
+    "edit_success": "Editing Successful",
+    "edit_failed": "Editing Failed",
+    "remove_success": "Remove Successful",
+    "remove_failed": "Remove Failed"
+  },
+  "saved": {
+    "example": "this is an example response"
+  }
+}

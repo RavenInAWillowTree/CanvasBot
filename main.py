@@ -17,20 +17,6 @@ def change_display(display):
         return new_display
 
 
-def change_token(token):
-    if token == "":
-        print("No token defined")
-    else:
-        print(f"Current token: {token}")
-    new_token = input("Enter new token (or q to cancel):\n")
-    if new_token == "q":
-        print("Cancelled...")
-        return token
-    else:
-        print("New token saved")
-        return new_token
-
-
 def toggle_extension(config_data):
     while True:
         # list all extensions
@@ -51,13 +37,20 @@ def toggle_extension(config_data):
                 case 4:
                     ext_table.append([f"{Fore.RED}{ext[0]}", "undefined", f"{enabled}{Fore.RESET}"])
         print(f"Extensions:\n{tabulate(ext_table, headers=['Name', 'Status', 'Enabled'])}\n")
-                    
+
+        # get plugin to toggle
         selected = input("Select extension to toggle (or q to cancel):\n")
         found = False
+
+        # quit and non-optional extensions
         if selected == "q":
             print("Cancelled...")
             return config_data
+        elif "_Canvas" in selected:
+            print("you cannot disable core Canvas extensions")
+            continue
 
+        # toggle extension
         for extension in config_data['extensions']:
             if extension['name'] == selected:
                 extension['enabled'] = not extension['enabled']
@@ -144,9 +137,8 @@ while True:
 Bot Options:
 (1): Run Bot
 (2): Change Display Name
-(3): Change Token
-(4): Enable/Disable Extension
-(5): Quit""")
+(3): Enable/Disable Extension
+(4): Quit""")
         choice = int(input(""))
 
         match choice:
@@ -156,10 +148,8 @@ Bot Options:
             case 2:
                 config_data['displayName'] = change_display(config_data['displayName'])
             case 3:
-                config_data['token'] = change_token(config_data['token'])
-            case 4:
                 config_data = toggle_extension(config_data)
-            case 5:  # quit
+            case 4:  # quit
                 exit()
             case _:
                 print("Please choose from one of the options listed")
@@ -173,13 +163,13 @@ Bot Options:
 
 # set up the bot
 bot = lightbulb.BotApp(
-    token=config_data['token'],
+    token=os.environ['TOKEN'],
     logs={
         "version": 1,
         "incremental": True,
         "loggers": {
             "hikari": {"level": "INFO"},
-            "lightbulb": {"level": "DEBUG"},
+            "lightbulb": {"level": "INFO"},
         },
     },
     help_slash_command=True
@@ -190,11 +180,10 @@ for extension in config_data['extensions']:
     try:
         if extension['enabled']:
             bot.load_extensions(f"extensions.{extension['name']}.main")
-            print(f"{Fore.GREEN}loaded extension '{extension['name']}'{Fore.RESET}")
         else:
-            print(f"{Fore.YELLOW}extension '{extension['name']}' disabled, skipped{Fore.RESET}")
-    except:
-        print(f"{Fore.RED}extension '{extension['name']}' broken, skipped{Fore.RESET}")
+            print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")
+    except Exception as e:
+        print(f"{Fore.RED}extension '{extension['name']}' broken, skipped\nException: {e}{Fore.RESET}")
 
 # run the bot
 bot.run()
