@@ -1,0 +1,10 @@
+{
+    "displayName": "YourBotNameHere",
+    "token": "MTI0MjUzNzY4NTgxMDQxNzc5NA.G6DEdx.D24yzx0EDtyQ7X4QG5k5yzsGgwDKzZ3_OYEiao",
+    "extensions": [
+        {
+            "name": "utilities",
+            "enabled": true
+        }
+    ]
+}

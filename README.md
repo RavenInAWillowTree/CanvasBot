@@ -1,2 +1,3 @@
 # CanvasBot
- A template discord bot made with Python and Hikari Lightbulb
+
+A template discord bot made with Python and Hikari Lightbulb
