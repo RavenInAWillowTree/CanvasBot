@@ -6,9 +6,12 @@ import json
 import os
 
 
-def convert_path(path):
+def convert_path(path, root):
+    # add the root script onto the end of path
+    # since they are stored separately in the config
+    combined = f"{path}/{root}"
     # strip the .py off the path
-    new_path = path.removesuffix('.py')
+    new_path = combined.removesuffix('.py')
     # return path with all / replaced with .
     # so the path is compatible with lightbulb
     return new_path.replace("/", ".")
@@ -28,19 +31,19 @@ def change_display(display):
 def toggle_extension(config_data):
     while True:
         # display a table of all extensions
-        display_extensions(config_data)
+        display_extension_table(config_data)
         # get plugin to toggle
         selected = input("\nSelect extension to toggle (or q to cancel):\n")
         found = False
 
         # quit and non-optional extensions
-        if selected == "q":
+        if selected.lower() == "q":
             print("Cancelled...")
             return config_data
 
         # toggle extension
         for extension in config_data['extensions']:
-            if extension['name'] == selected:
+            if extension['name'].lower() == selected.lower():
                 if "required" in extension.keys():
                     break
                 else:
@@ -54,7 +57,35 @@ def toggle_extension(config_data):
             return config_data
 
 
-def display_extensions(config_data):
+def extension_info(config_data):
+    while True:
+        # display a table of all extensions
+        display_extension_table(config_data)
+        # get plugin to toggle
+        selected = input("\nSelect extension to view description:\n")
+        found = False
+
+        # quit and non-optional extensions
+        if selected.lower() == "q":
+            print("Cancelled...")
+            return config_data
+
+        # toggle extension
+        for ext in config_data['extensions']:
+            if ext['name'].lower() == selected.lower():
+                name, desc, enabled = ext['name'], ext['desc'], ext['enabled']
+                enabled, enabled_color = "enabled" if enabled else "disabled", Fore.GREEN if enabled else Fore.YELLOW
+                path = f"{ext['path']}/{ext['root_script']}"
+                ext_info = f"""
+{Style.BRIGHT}{Fore.CYAN}{name}:{Style.RESET_ALL} {enabled_color}{enabled}{Fore.RESET}
+{desc}
+{Fore.LIGHTBLACK_EX}Path: {path}{Fore.RESET}
+"""
+                print(ext_info)
+                continue
+
+
+def display_extension_table(config_data):
     # list all extensions
     ext_list = get_extensions(config_data)
     ext_table = []
@@ -114,7 +145,7 @@ Made with {Fore.BLUE}CanvasBot{Fore.RESET}
 -*---*-------*---*-\n""")
 
 # show extensions
-display_extensions(config_data)
+display_extension_table(config_data)
 
 # initial options menu
 while True:
@@ -136,11 +167,10 @@ Bot Options:
             case 2:
                 config_data['displayName'] = change_display(config_data['displayName'])
             case 3:
-                # TODO: Extension details
-                print("Still Todo")
+                extension_info(config_data)
             case 4:
                 config_data = toggle_extension(config_data)
-            case 5:  # quit
+            case 5 | "q":  # quit
                 exit()
             case _:
                 print("Please choose from one of the options listed")
@@ -175,7 +205,7 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     for extension in config_data['extensions']:
         try:
             if extension['enabled']:
-                path = convert_path(extension['path'])
+                path = convert_path(extension['path'], extension['root_script'])
                 await client.load_extensions(path)
             else:
                 print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")

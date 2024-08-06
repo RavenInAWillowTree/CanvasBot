@@ -27,7 +27,7 @@
         },
         {
             "name": "AskMeAnything",
-            "desc": "basic key-value paired response engine, support for bot non-user and user specific responses",
+            "desc": "basic key-value paired response engine, with support for bot non-user and user specific responses",
             "path": "extensions/CanvasCore/ask",
             "root_script": "ask.py",
             "enabled": true
