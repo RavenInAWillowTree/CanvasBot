@@ -79,6 +79,7 @@ def extension_info(config_data):
                 ext_info = f"""
 {Style.BRIGHT}{Fore.CYAN}{name}:{Style.RESET_ALL} {enabled_color}{enabled}{Fore.RESET}
 {desc}
+
 {Fore.LIGHTBLACK_EX}Path: {path}{Fore.RESET}
 """
                 print(ext_info)
