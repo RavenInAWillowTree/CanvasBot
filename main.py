@@ -1,9 +1,9 @@
 from colorama import Fore, Style
 from tabulate import tabulate
+import hikari
 import lightbulb
 import json
 import os
-import ast
 
 
 def change_display(display):
@@ -29,13 +29,13 @@ def toggle_extension(config_data):
                 case 0:
                     ext_table.append([f"{enabled_color}{ext[0]}", "valid", f"{enabled}{Fore.RESET}"])
                 case 1:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "invalid plugin", f"{enabled}{Fore.RESET}"])
-                case 2:
                     ext_table.append([f"{Fore.RED}{ext[0]}", "missing main.py", f"{enabled}{Fore.RESET}"])
-                case 3:
+                case 2:
                     ext_table.append([f"{Fore.RED}{ext[0]}", "defined but missing", f"{enabled}{Fore.RESET}"])
-                case 4:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "undefined", f"{enabled}{Fore.RESET}"])
+                case 3:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "undefined extension", f"{enabled}{Fore.RESET}"])
+                case _:
+                    ext_table.append([f"{Fore.RED}{ext[0]}", "unknown error", f"{enabled}{Fore.RESET}"])
         print(f"Extensions:\n{tabulate(ext_table, headers=['Name', 'Status', 'Enabled'])}\n")
 
         # get plugin to toggle
@@ -64,47 +64,25 @@ def toggle_extension(config_data):
 
 
 def get_extensions(config_data):
-    # find and categorise extensions by state
-    # helper function
-    def validate_plugin(name):
-        load_found, unload_found = False, False
-        with open(f"extensions/{name}/main.py", "r") as f:
-            tree = ast.parse(f.read())
-            for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef):
-                    if node.name == "load":
-                        load_found = True
-                    if node.name == "unload":
-                        unload_found = True
-            if load_found and unload_found:
-                return True
-            else:
-                return False
-
     # get extensions both defined and in files
     ext_list = []
     # state:
     #   0: valid and functional!
-    #   1: missing load or unload function
-    #   2: missing main.py
-    #   3: missing but defined in config.json
-    #   4: found but not defined in config.json
+    #   1: missing main.py
+    #   2: missing but defined in config.json
+    #   3: found but not defined in config.json
     ext_list_dir = os.listdir("extensions")
     ext_list_def = config_data['extensions']
     # first check extensions defined in the config file
     for ext in ext_list_def:
         name, enabled = ext['name'], ext['enabled']
-        state = 0
         if os.path.exists(f"extensions/{name}"):
             if os.path.exists(f"extensions/{name}/main.py"):
-                if validate_plugin(name):
-                    state = 0
-                else:
-                    state = 1
+                state = 0
             else:
-                state = 2
+                state = 1
         else:
-            state = 3
+            state = 2
         ext_list.append([name, state, enabled])
     # check the extensions director for any undefined
     for ix, ext in enumerate(ext_list_dir):
@@ -114,7 +92,7 @@ def get_extensions(config_data):
                 found = True
                 break
         if not found:
-            ext_list.append([ext, 4, False])
+            ext_list.append([ext, 3, False])
     # return results
     return ext_list
 
@@ -162,29 +140,38 @@ Bot Options:
         continue
 
 # set up the bot
-bot = lightbulb.BotApp(
+bot = hikari.GatewayBot(
     token=os.environ['TOKEN'],
-    prefix="cvs!",
     logs={
         "version": 1,
         "incremental": True,
         "loggers": {
             "hikari": {"level": "INFO"},
+            "hikari.ratelimits": {"level": "INFO"},
             "lightbulb": {"level": "INFO"},
         },
-    },
-    help_slash_command=True
+    }
 )
 
+client = lightbulb.client_from_app(bot)
+
+
 # load extensions
-for extension in config_data['extensions']:
-    try:
-        if extension['enabled']:
-            bot.load_extensions(f"extensions.{extension['name']}.main")
-        else:
-            print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")
-    except Exception as e:
-        print(f"{Fore.RED}extension '{extension['name']}' broken, skipped\nException: {e}{Fore.RESET}")
+@bot.listen(hikari.StartingEvent)
+async def on_starting(_: hikari.StartingEvent) -> None:
+    for extension in config_data['extensions']:
+        try:
+            if extension['enabled']:
+                await client.load_extensions(f"extensions.{extension['name']}.main")
+            else:
+                print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")
+        except Exception as e:
+            print(f"{Fore.RED}Extension '{extension['name']}' broken or could not be loaded, skipped"
+                  f"\n\t{e}{Fore.RESET}")
+
+    # start the bot
+    await client.start()
 
 # run the bot
+bot.subscribe(hikari.StartingEvent, client.start)
 bot.run()

@@ -1,20 +1,16 @@
 import lightbulb
 
-# plugin setup
-plugin = lightbulb.Plugin("built-in")
-
-
-def load(bot):
-    bot.add_plugin(plugin)
-
-
-def unload(bot):
-    bot.remove_plugin(plugin)
+# extension setup
+loader = lightbulb.Loader()
 
 
 # standard ping command
-@plugin.command
-@lightbulb.command("ping", "standard ping test command")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def ping(ctx: lightbulb.Context):
-    await ctx.respond("Pong")
+@loader.command
+class Ping(
+    lightbulb.SlashCommand,
+    name="ping",
+    description="a test command to ensure the bot is working"
+):
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        await ctx.respond("Pong")

@@ -3,7 +3,11 @@ import lightbulb
 from hikari import Embed, Color, File
 
 # plugin setup
-plugin = lightbulb.Plugin("ask")
+loader = lightbulb.Loader()
+group = lightbulb.Group("ask", "ask me anything")
+settings = group.subgroup("settings", "ask command settings")
+
+loader.command(group)
 
 with open("config.json") as f:
     jdata = json.load(f)
@@ -11,104 +15,100 @@ with open("config.json") as f:
     default_embed_color = jdata['default_color']
 
 
-def load(bot):
-    bot.add_plugin(plugin)
-
-
-def unload(bot):
-    bot.remove_plugin(plugin)
-
-
-# main command group
-@plugin.command
-@lightbulb.command("ask", "ama group")
-@lightbulb.implements(lightbulb.SlashCommandGroup)
-async def ask() -> None: pass
-
-
-# ask admin tools command group
-@plugin.command
-@lightbulb.add_checks(lightbulb.has_roles(admin_role_id))
-@lightbulb.command("ask_settings", "(admin) ask extension settings")
-@lightbulb.implements(lightbulb.SlashCommandGroup)
-async def ask_settings() -> None: pass
-
-
 # ask a question, get a response
-@ask.child
-@lightbulb.option("key", "question key", required=False, default="showList")
-@lightbulb.command("question", "ask me anything")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def ask_question(ctx: lightbulb.Context) -> None:
-    # load json data
-    with open("extensions/ask/data.json", encoding="utf-8") as f:
-        jdata = json.load(f)
+@group.register
+class AskQuestion(
+    lightbulb.SlashCommand,
+    name="question",
+    description="ask me anything"
+):
+    key = lightbulb.string("key", "question key", default="showList")
 
-    # show list of all keys if no key given
-    if ctx.options.key == "showList":
-        body = "**Options:**\n"
-        for item in jdata['saved'].keys():
-            body += f"{item}\n"
-
-        message = Embed(
-            title=jdata['builtin']['help_header'],
-            description=body,
-            color=Color.from_hex_code(default_embed_color),
-        )
-        await ctx.respond(message)
-
-    elif ctx.options.key in jdata['saved'].keys():
-        await ctx.respond(jdata['saved'][ctx.options.key])
-
-    else:
-        await ctx.respond(jdata['builtin']['key_404'])
-
-
-# add or change a response
-@ask_settings.child
-@lightbulb.option("content", "question response")
-@lightbulb.option("key", "question key")
-@lightbulb.command("edit", "add or change a response")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def ask_edit(ctx: lightbulb.Context) -> None:
-    try:
-        with open("extensions/ask/data.json", "r") as f:
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        # load json data
+        with open("extensions/ask/data.json", "r", encoding="utf-8") as f:
             jdata = json.load(f)
 
-        new_data = {ctx.options.key: ctx.options.content}
-        jdata['saved'].update(new_data)
+        # show list of all keys if no key is given
+        if self.key == "showList":
+            body = "**Keys:**\n"
+            for item in jdata['saved'].keys():
+                body += f"{item}\n"
 
-        with open("extensions/ask/data.json", "w") as f:
-            json.dump(jdata, f, indent=4, separators=(",", ": "))
-    except:
-        await ctx.respond(jdata['builtin']['edit_failed'])
-    else:
-        await ctx.respond(jdata['builtin']['edit_success'])
+            message = Embed(
+                title=jdata['required']['help_header'],
+                description=body,
+                color=Color.from_hex_code(default_embed_color)
+            )
+            await ctx.respond(message)
+
+        elif self.key in jdata['saved'].keys():
+            await ctx.respond(jdata['saved'][self.key])
+
+        else:
+            await ctx.respond(jdata['required']['key_404'])
+
+
+# add or change a
+@settings.register
+class SettingsEdit(
+    lightbulb.SlashCommand,
+    name="edit",
+    description="edit or add a response",
+):
+    key = lightbulb.string("key", "question key")
+    value = lightbulb.string("response", "response to key")
+
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        try:
+            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+                jdata = json.load(f)
+
+            new_data = {self.key: self.value}
+            jdata['saved'].update(new_data)
+
+            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+                json.dump(jdata, f, indent=4, separators=(",", ": "))
+        except:
+            await ctx.respond(jdata['required']['edit_failed'])
+        else:
+            await ctx.respond(jdata['required']['edit_success'])
 
 
 # remove a response
-@ask_settings.child
-@lightbulb.option("key", "question key")
-@lightbulb.command("remove", "remove a response")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def ask_remove(ctx: lightbulb.Context) -> None:
-    try:
-        with open("extensions/ask/data.json", "r") as f:
-            jdata = json.load(f)
+@settings.register
+class SettingsRemove(
+    lightbulb.SlashCommand,
+    name="remove",
+    description="remove a response",
+):
+    key = lightbulb.string("key", "question key")
 
-        del jdata['saved'][ctx.options.key]
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        try:
+            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+                jdata = json.load(f)
 
-        with open("extensions/ask/data.json" "w") as f:
-            json.dump(jdata, f, indent=4, separators=(",", ": "))
-    except:
-        await ctx.respond(jdata['builtin']['remove_failed'])
-    else:
-        await ctx.respond(jdata['builtin']['remove_success'])
+            del jdata['required'][self.key]
+
+            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+                json.dump(jdata, f, indent=4, separators=(",", ": "))
+        except:
+            await ctx.respond(jdata['required']['remove_failed'])
+        else:
+            await ctx.respond(jdata['required']['remove_success'])
 
 
-# show ask data.json
-@ask_settings.child
-@lightbulb.command("show_config", "display canvas config json")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def show_config(ctx: lightbulb.Context):
-    await ctx.respond(File('extensions/ask/data.json'))
+# show data.json
+@settings.register
+class SettingsShowConfig(
+    lightbulb.SlashCommand,
+    name="show-config",
+    description="display ask command json data",
+):
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        await ctx.respond(File('extensions/ask/data.json'))

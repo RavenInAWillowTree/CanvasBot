@@ -1,5 +1,5 @@
 {
-  "builtin": {
+  "required`": {
     "help_header": "All Keys",
     "key_404": "key not found",
     "edit_success": "Editing Successful",
@@ -9,5 +9,8 @@
   },
   "saved": {
     "example": "this is an example response"
+  },
+  "users": {
+    "example": "example"
   }
 }

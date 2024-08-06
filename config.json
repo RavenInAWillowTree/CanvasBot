@@ -9,7 +9,7 @@
         },
         {
             "name": "CanvasPlayer",
-            "enabled": true
+            "enabled": false
         },
         {
             "name": "built-in",
