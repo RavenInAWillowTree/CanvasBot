@@ -1,6 +1,7 @@
 **# CanvasBot
 
 [Releases]: https://github.com/Hyjaxaru/CanvasBot/releases
+[documentation]: https://hikari-lightbulb.readthedocs.io/en/v3/index.html
 
 [CanvasBootstrap]: #cvs-bootstrap
 [CanvasManager]: #cvs-manager
@@ -43,9 +44,11 @@ A small collection of little utility commands, both slash and context menu comma
 Allows you to set predetermined responses to question keys. Support for bot non-user and user specific responses.
 
 
-## Developing Extensions
+## Developing Extensions for CanvasBot
 
-CanvasBot is built using `lightbulb v3` and keeps track of them in the `config.json`. An extension will not be loaded if it is not defined, or raises an error during load. Here is an example definition:
+### 1. Defining an Extension:
+
+CanvasBot keeps track of extensions in the `config.json`. An extension will not be loaded if it is not defined, or raises an error during its load attempt. Here is an example definition:
 
 ```json
 {
@@ -60,4 +63,10 @@ CanvasBot is built using `lightbulb v3` and keeps track of them in the `config.j
 There is an optional parameter, `required`, that if present will stop the extension from being disabled. the value of `required` doesn't matter, it will work as long as it's present in the extension declaration.**
 
 > [!IMPORTANT]
-> The `required` parameter should not be used in your own extensions unless absolutely necessary.
+> The `required` parameter is designed for extensions that CanvasBot relies on to remain functional. You should only include it if removing your extension would break something.
+
+Your extension folder can contain anything, but ensure there is a valid root script that is defined in the config file
+
+### 2. Programming Extensions
+
+CanvasBot is built on the **Lightbulb v3 Alpha**, so you should reference the v3 [documentation] for how to define commands and build features
