@@ -74,12 +74,11 @@ def extension_info(config_data):
         for ext in config_data['extensions']:
             if ext['name'].lower() == selected.lower():
                 name, desc, enabled = ext['name'], ext['desc'], ext['enabled']
-                enabled, enabled_color = "enabled" if enabled else "disabled", Fore.GREEN if enabled else Fore.YELLOW
+                enabled, enabled_color = "Enabled" if enabled else "Disabled", Fore.GREEN if enabled else Fore.YELLOW
                 path = f"{ext['path']}/{ext['root_script']}"
                 ext_info = f"""
 {Style.BRIGHT}{Fore.CYAN}{name}:{Style.RESET_ALL} {enabled_color}{enabled}{Fore.RESET}
 {desc}
-
 {Fore.LIGHTBLACK_EX}Path: {path}{Fore.RESET}
 """
                 print(ext_info)
@@ -91,19 +90,19 @@ def display_extension_table(config_data):
     ext_list = get_extensions(config_data)
     ext_table = []
     for ext in ext_list:
-        enabled = "enabled" if ext[3] else "disabled"
+        enabled = "Enabled" if ext[3] else "Disabled"
         enabled_color = Fore.GREEN if ext[3] else Fore.YELLOW
         match ext[2]:
             case -1:
-                ext_table.append([f"{Fore.CYAN}{ext[0]}", ext[1], "valid", f"required{Fore.RESET}"])
+                ext_table.append([f"{Fore.CYAN}{ext[0]}", ext[1], "OK", f"Required{Fore.RESET}"])
             case 0:
-                ext_table.append([f"{enabled_color}{ext[0]}", ext[1], "valid", f"{enabled}{Fore.RESET}"])
+                ext_table.append([f"{enabled_color}{ext[0]}", ext[1], "OK", f"{enabled}{Fore.RESET}"])
             case 1:
-                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "missing root script", f"{enabled}{Fore.RESET}"])
+                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "Missing root script", f"{enabled}{Fore.RESET}"])
             case 2:
-                ext_table.append([f"{Fore.RED}{ext[0]}", f"defined as {ext[1]}", "missing", f"{enabled}{Fore.RESET}"])
+                ext_table.append([f"{Fore.RED}{ext[0]}", f"Defined as {ext[1]}", "missing", f"{enabled}{Fore.RESET}"])
             case _:
-                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "unknown error", f"{enabled}{Fore.RESET}"])
+                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "Unknown error", f"{enabled}{Fore.RESET}"])
     ext_table_sorted = sorted(ext_table, key=lambda x: x[0])
     print(f"Extensions:\n{tabulate(ext_table_sorted, headers=['Name', 'Path', 'Status', 'Enabled'])}")
 
