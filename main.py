@@ -6,6 +6,14 @@ import json
 import os
 
 
+def convert_path(path):
+    # strip the .py off the path
+    new_path = path.removesuffix('.py')
+    # return path with all / replaced with .
+    # so the path is compatible with lightbulb
+    return new_path.replace("/", ".")
+
+
 def change_display(display):
     print(f"Current display name: {display}")
     new_display = input("Enter new name (or q to cancel):\n")
@@ -19,43 +27,26 @@ def change_display(display):
 
 def toggle_extension(config_data):
     while True:
-        # list all extensions
-        ext_list = get_extensions(config_data)
-        ext_table = []
-        for ext in ext_list:
-            enabled = "enabled" if ext[2] else "disabled"
-            enabled_color = Fore.GREEN if ext[2] else Fore.YELLOW
-            match ext[1]:
-                case 0:
-                    ext_table.append([f"{enabled_color}{ext[0]}", "valid", f"{enabled}{Fore.RESET}"])
-                case 1:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "missing main.py", f"{enabled}{Fore.RESET}"])
-                case 2:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "defined but missing", f"{enabled}{Fore.RESET}"])
-                case 3:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "undefined extension", f"{enabled}{Fore.RESET}"])
-                case _:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", "unknown error", f"{enabled}{Fore.RESET}"])
-        print(f"Extensions:\n{tabulate(ext_table, headers=['Name', 'Status', 'Enabled'])}\n")
-
+        # display a table of all extensions
+        display_extensions(config_data)
         # get plugin to toggle
-        selected = input("Select extension to toggle (or q to cancel):\n")
+        selected = input("\nSelect extension to toggle (or q to cancel):\n")
         found = False
 
         # quit and non-optional extensions
         if selected == "q":
             print("Cancelled...")
             return config_data
-        elif "_Canvas" in selected:
-            print("you cannot disable core Canvas extensions")
-            continue
 
         # toggle extension
         for extension in config_data['extensions']:
             if extension['name'] == selected:
-                extension['enabled'] = not extension['enabled']
-                found = True
-                break
+                if "required" in extension.keys():
+                    break
+                else:
+                    extension['enabled'] = not extension['enabled']
+                    found = True
+                    break
         if not found:
             print("Select a valid extension")
             continue
@@ -63,36 +54,50 @@ def toggle_extension(config_data):
             return config_data
 
 
+def display_extensions(config_data):
+    # list all extensions
+    ext_list = get_extensions(config_data)
+    ext_table = []
+    for ext in ext_list:
+        enabled = "enabled" if ext[3] else "disabled"
+        enabled_color = Fore.GREEN if ext[3] else Fore.YELLOW
+        match ext[2]:
+            case -1:
+                ext_table.append([f"{Fore.CYAN}{ext[0]}", ext[1], "valid", f"required{Fore.RESET}"])
+            case 0:
+                ext_table.append([f"{enabled_color}{ext[0]}", ext[1], "valid", f"{enabled}{Fore.RESET}"])
+            case 1:
+                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "missing root script", f"{enabled}{Fore.RESET}"])
+            case 2:
+                ext_table.append([f"{Fore.RED}{ext[0]}", f"defined as {ext[1]}", "missing", f"{enabled}{Fore.RESET}"])
+            case _:
+                ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "unknown error", f"{enabled}{Fore.RESET}"])
+    ext_table_sorted = sorted(ext_table, key=lambda x: x[0])
+    print(f"Extensions:\n{tabulate(ext_table_sorted, headers=['Name', 'Path', 'Status', 'Enabled'])}")
+
+
 def get_extensions(config_data):
     # get extensions both defined and in files
     ext_list = []
     # state:
-    #   0: valid and functional!
-    #   1: missing main.py
-    #   2: missing but defined in config.json
-    #   3: found but not defined in config.json
-    ext_list_dir = os.listdir("extensions")
+    #  -1: valid and required
+    #   0: valid and functional
+    #   1: missing defined root script.py
+    #   2: directory invalid or missing
     ext_list_def = config_data['extensions']
-    # first check extensions defined in the config file
     for ext in ext_list_def:
-        name, enabled = ext['name'], ext['enabled']
-        if os.path.exists(f"extensions/{name}"):
-            if os.path.exists(f"extensions/{name}/main.py"):
-                state = 0
+        name, path, root, enabled = ext['name'], ext['path'], ext['root_script'], ext['enabled']
+        if os.path.exists(path):
+            if os.path.exists(f"{path}/{root}"):
+                if "required" in ext.keys():
+                    state = -1
+                else:
+                    state = 0
             else:
                 state = 1
         else:
             state = 2
-        ext_list.append([name, state, enabled])
-    # check the extensions director for any undefined
-    for ix, ext in enumerate(ext_list_dir):
-        found = False
-        for saved in ext_list:
-            if ext == saved[0]:
-                found = True
-                break
-        if not found:
-            ext_list.append([ext, 3, False])
+        ext_list.append([name, path, state, enabled])
     # return results
     return ext_list
 
@@ -106,7 +111,10 @@ print(f"""-*---*-------*---*-
 {Style.BRIGHT}{config_data['displayName']}{Style.RESET_ALL}
 Made with {Fore.BLUE}CanvasBot{Fore.RESET}
 {Fore.CYAN}</{Fore.RESET}Hyjaxaru{Fore.CYAN}>{Fore.RESET} {Fore.RED}❤{Fore.RESET}
--*---*-------*---*-""")
+-*---*-------*---*-\n""")
+
+# show extensions
+display_extensions(config_data)
 
 # initial options menu
 while True:
@@ -114,10 +122,12 @@ while True:
         print("""
 Bot Options:
 (1): Run Bot
-(2): Change Display Name
-(3): Enable/Disable Extension
-(4): Quit""")
+(2): Change Display 
+(3): Extension Info
+(4): Enable/Disable Extensions
+(5): Quit""")
         choice = int(input(""))
+        print("")  # leave some space
 
         match choice:
             case 1:  # stop loop and run bot
@@ -126,8 +136,11 @@ Bot Options:
             case 2:
                 config_data['displayName'] = change_display(config_data['displayName'])
             case 3:
+                # TODO: Extension details
+                print("Still Todo")
+            case 4:
                 config_data = toggle_extension(config_data)
-            case 4:  # quit
+            case 5:  # quit
                 exit()
             case _:
                 print("Please choose from one of the options listed")
@@ -162,7 +175,8 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     for extension in config_data['extensions']:
         try:
             if extension['enabled']:
-                await client.load_extensions(f"extensions.{extension['name']}.main")
+                path = convert_path(extension['path'])
+                await client.load_extensions(path)
             else:
                 print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")
         except Exception as e:

@@ -4,19 +4,32 @@
     "admin_role_id": 1083524896417665156,
     "extensions": [
         {
-            "name": "_CanvasManager",
-            "enabled": true
+            "name": "CanvasManager",
+            "desc": "Bot management, all from the discord client",
+            "path": "extensions/CanvasManager",
+            "root_script": "main.py",
+            "enabled": true,
+            "required": true
         },
         {
             "name": "CanvasPlayer",
+            "desc": "Prototype music player, doesn't currently work",
+            "path": "extensions/CanvasCore/music_player",
+            "root_script": "main.py",
             "enabled": false
         },
         {
-            "name": "built-in",
+            "name": "Utils",
+            "desc": "Basic, built-in utility commands",
+            "path": "extensions/CanvasCore/basic",
+            "root_script": "utils.py",
             "enabled": true
         },
         {
-            "name": "ask",
+            "name": "AskMeAnything",
+            "desc": "basic key-value paired response engine, support for bot non-user and user specific responses",
+            "path": "extensions/CanvasCore/ask",
+            "root_script": "ask.py",
             "enabled": true
         }
     ]
