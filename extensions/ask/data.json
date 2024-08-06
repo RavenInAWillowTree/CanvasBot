@@ -1,16 +1,24 @@
 {
-  "required`": {
-    "help_header": "All Keys",
-    "key_404": "key not found",
-    "edit_success": "Editing Successful",
-    "edit_failed": "Editing Failed",
-    "remove_success": "Remove Successful",
-    "remove_failed": "Remove Failed"
-  },
-  "saved": {
-    "example": "this is an example response"
-  },
-  "users": {
-    "example": "example"
-  }
+    "required": {
+        "help_header": "All Keys",
+        "question_key_404": "question key not found",
+        "question_ask_failed": "Question ask Failed",
+        "question_add_success": "Adding non-user Successful",
+        "question_add_failed": "Adding non-user Failed",
+        "question_remove_success": "Remove non-user Successful",
+        "question_remove_failed": "Remove non-user Failed",
+        "user_404": "user not found",
+        "user_ask_failed": "User ask Failed",
+        "user_add_success": "Adding user Successful",
+        "user_add_failed": "Adding user Failed",
+        "user_remove_success": "Remove user Successful",
+        "user_remove_failed": "Remove user Failed"
+    },
+    "saved": {
+        "example": "this is an example of a non user-specific response",
+        "hyjaxaru": "Based developer"
+    },
+    "users": {
+        "example": "this is an example of a user-specific response"
+    }
 }
