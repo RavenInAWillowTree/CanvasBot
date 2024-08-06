@@ -14,6 +14,8 @@ with open("config.json") as f:
     admin_role_id = jdata['admin_role_id']
     default_embed_color = jdata['default_color']
 
+data_path = "extensions/CanvasCore/ask/data.json"
+
 
 # show data.json
 @ settings.register
@@ -40,7 +42,7 @@ class AskQuestion(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open("extensions/ask/data.json", "r", encoding="utf-8") as f:
+            with open(data_path, "r", encoding="utf-8") as f:
                 jdata = json.load(f)
 
             # show list of all keys if no key is given
@@ -86,7 +88,7 @@ class AskAboutUser(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open("extensions/ask/data.json", "r", encoding="utf-8") as f:
+            with open(data_path, "r", encoding="utf-8") as f:
                 jdata = json.load(f)
 
             if str(self.user) in jdata['saved'].keys():
@@ -114,13 +116,13 @@ class SettingsAddNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+            with open(data_path, "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             new_data = {self.key: self.value}
             jdata['saved'].update(new_data)
 
-            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+            with open(data_path, "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -142,13 +144,13 @@ class SettingsAddUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+            with open(data_path, "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             new_data = {str(self.user): self.value}
             jdata['saved'].update(new_data)
 
-            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+            with open(data_path, "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -169,12 +171,12 @@ class SettingsRemoveNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+            with open(data_path, "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             del jdata['saved'][self.key]
 
-            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+            with open(data_path, "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -195,12 +197,12 @@ class SettingsRemoveUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open("extensions/ask/data.json", "r", encoding='utf-8') as f:
+            with open(data_path, "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             del jdata['saved'][str(self.user)]
 
-            with open("extensions/ask/data.json", "w", encoding='utf-8') as f:
+            with open(data_path, "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)

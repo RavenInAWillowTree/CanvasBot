@@ -1,4 +1,4 @@
-**# CanvasBot
+# CanvasBot
 
 [Releases]: https://github.com/Hyjaxaru/CanvasBot/releases
 [documentation]: https://hikari-lightbulb.readthedocs.io/en/v3/index.html
@@ -30,7 +30,7 @@ The CLI interface. allows you to manage basic bot settings and extensions withou
 
 ### CanvasManager <a name="cvs-manager"></a> 
 
-The main backend of CanvasBot. Allows you to change settings and config data on-the-fly in the Discord client. In the future, you will be able to add and remove extensions this way, with automatic `config.json` updates.
+The main backend of CanvasBot. Allows you to change settings and config data on-the-fly in the Discord client. In the future, you will be able to add and remove extensions this way, with automatic config updates.
 
 > [!NOTE]
 > This extension is required, and therefor cannot be disabled.
