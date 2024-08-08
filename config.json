@@ -15,7 +15,7 @@
             "name": "CanvasPlayer",
             "desc": "Prototype music player, doesn't currently work",
             "path": "extensions/CanvasCore/music_player",
-            "root_script": "main.py",
+            "root_script": "player.py",
             "enabled": false
         },
         {

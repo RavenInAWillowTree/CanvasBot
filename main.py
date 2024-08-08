@@ -12,6 +12,22 @@ console = Console()
 
 config_data = CanvasBasic.get_config_data()
 
+# set up the bot
+bot = hikari.GatewayBot(
+    token=os.environ['TOKEN'],
+    logs={
+        "version": 1,
+        "incremental": True,
+        "loggers": {
+            "hikari": {"level": "INFO"},
+            "hikari.ratelimits": {"level": "INFO"},
+            "lightbulb": {"level": "INFO"},
+        },
+    }
+)
+
+client = lightbulb.client_from_app(bot)
+
 # initial prints
 console.print(f"""-*---*-------*---*-
 [bold cyan]{config_data['displayName']}[/bold cyan]
@@ -56,22 +72,6 @@ Bot Options:
         print("Please input a number")
         continue
 
-# set up the bot
-bot = hikari.GatewayBot(
-    token=os.environ['TOKEN'],
-    logs={
-        "version": 1,
-        "incremental": True,
-        "loggers": {
-            "hikari": {"level": "INFO"},
-            "hikari.ratelimits": {"level": "INFO"},
-            "lightbulb": {"level": "INFO"},
-        },
-    }
-)
-
-client = lightbulb.client_from_app(bot)
-
 
 # load extensions
 @bot.listen(hikari.StartingEvent)
@@ -82,10 +82,10 @@ async def on_starting(_: hikari.StartingEvent) -> None:
                 path = Helper.convert_path(ext['path'], ext['root_script'])
                 await client.load_extensions(path)
             else:
-                console.print(f"[yellow]Extension '{ext['name']}' disabled, skipped{Fore.RESET}")
+                console.print(f"[yellow]Extension '{ext['name']}' disabled, skipped")
         except Exception as e:
             console.print(f"[red]Extension '{ext['name']}' broken or could not be loaded, skipped")
-            console.print(f"[red]Error: {e}")
+            console.print(f"[red]{e}")
 
     # start the bot
     await client.start()
