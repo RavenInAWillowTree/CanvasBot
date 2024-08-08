@@ -9,12 +9,19 @@ settings = group.subgroup("settings", "ask command settings")
 
 loader.command(group)
 
+# get data from config.json
 with open("config.json") as f:
-    jdata = json.load(f)
-    admin_role_id = jdata['admin_role_id']
-    default_embed_color = jdata['default_color']
-
-data_path = "extensions/CanvasCore/ask/data.json"
+    # load config data
+    config_data = json.load(f)
+    # set global variables
+    admin_role_id = config_data['admin_role_id']
+    default_embed_color = config_data['default_color']
+    # get filepaths
+    filepaths = []
+    for ext in config_data.get('extensions', []):
+        if ext['name'] == "Asker":
+            for file in ext['files']:
+                filepaths.append({f"{file}": f"{ext['path']}/{file}"})
 
 
 # show data.json
@@ -42,7 +49,7 @@ class AskQuestion(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open(data_path, "r", encoding="utf-8") as f:
+            with open(filepaths['data.json'], "r", encoding="utf-8") as f:
                 jdata = json.load(f)
 
             # show list of all keys if no key is given
@@ -88,7 +95,7 @@ class AskAboutUser(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open(data_path, "r", encoding="utf-8") as f:
+            with open(filepaths['data.json'], "r", encoding="utf-8") as f:
                 jdata = json.load(f)
 
             if str(self.user) in jdata['saved'].keys():
@@ -116,13 +123,13 @@ class SettingsAddNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(data_path, "r", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             new_data = {self.key: self.value}
             jdata['saved'].update(new_data)
 
-            with open(data_path, "w", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -144,13 +151,13 @@ class SettingsAddUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(data_path, "r", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             new_data = {str(self.user): self.value}
             jdata['saved'].update(new_data)
 
-            with open(data_path, "w", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -171,12 +178,12 @@ class SettingsRemoveNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(data_path, "r", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             del jdata['saved'][self.key]
 
-            with open(data_path, "w", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)
@@ -197,12 +204,12 @@ class SettingsRemoveUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(data_path, "r", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
                 jdata = json.load(f)
 
             del jdata['saved'][str(self.user)]
 
-            with open(data_path, "w", encoding='utf-8') as f:
+            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
                 json.dump(jdata, f, indent=4, separators=(",", ": "))
         except Exception as e:
             print(e)

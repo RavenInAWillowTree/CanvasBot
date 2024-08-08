@@ -30,6 +30,9 @@
             "desc": "basic key-value paired response engine, with support for bot non-user and user specific responses",
             "path": "extensions/CanvasCore/ask",
             "root_script": "ask.py",
+            "files": [
+                "data.json"
+            ],
             "enabled": true
         }
     ]

@@ -48,7 +48,7 @@ Allows you to set predetermined responses to question keys. Support for bot non-
 
 ### 1. Defining an Extension:
 
-CanvasBot keeps track of extensions in the `config.json`. An extension will not be loaded if it is not defined, or raises an error during its load attempt. Here is an example definition:
+CanvasBot keeps track of extensions in the `config.json`. An extension will not be loaded if it is not defined, or raises an error during its load attempt. Here is an example of an extension definition with all required parameters:
 
 ```json
 {
@@ -60,7 +60,11 @@ CanvasBot keeps track of extensions in the `config.json`. An extension will not 
 }
 ```
 
-There is an optional parameter, `required`, that if present will stop the extension from being disabled. the value of `required` doesn't matter, it will work as long as it's present in the extension declaration.**
+There are 2 optional parameters, `required` and `files`.
+
+`files` is a list of files that the extension uses. Since extensions must access files from the perspective of the root script, this allows file paths to be auto generated.
+
+`required` is a boolean that determines if the extension is required for the bot to function. If it is set to `true`, the bot will not start if the extension is not loaded.
 
 > [!IMPORTANT]
 > The `required` parameter is designed for extensions that CanvasBot relies on to remain functional. You should only include it if removing your extension would break something.
