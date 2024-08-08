@@ -1,6 +1,7 @@
-from hikari import Embed, Color, File
 import lightbulb
-import json
+from hikari import File
+
+from canvas_basic import CanvasBasic
 
 # extension setup
 loader = lightbulb.Loader()
@@ -8,10 +9,9 @@ group = lightbulb.Group("canvas-manager", "canvas-bot management, all from withi
 
 loader.command(group)
 
-with open("config.json") as f:
-    jdata = json.load(f)
-    admin_role_id = jdata['admin_role_id']
-    default_embed_color = jdata['default_color']
+config_data = CanvasBasic.get_config_data()
+admin_role_id = config_data['admin_role_id']
+default_embed_color = config_data['default_color']
 
 
 # show the main canvas config file

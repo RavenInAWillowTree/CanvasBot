@@ -7,7 +7,7 @@
             "name": "CanvasManager",
             "desc": "Bot management, all from the discord client",
             "path": "extensions/CanvasManager",
-            "root_script": "main.py",
+            "root_script": "canvas_manager.py",
             "enabled": true,
             "required": true
         },

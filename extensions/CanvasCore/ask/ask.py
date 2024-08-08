@@ -1,6 +1,9 @@
 import json
+
 import lightbulb
 from hikari import Embed, Color, File
+
+from canvas_basic import CanvasBasic
 
 # plugin setup
 loader = lightbulb.Loader()
@@ -9,19 +12,10 @@ settings = group.subgroup("settings", "ask command settings")
 
 loader.command(group)
 
-# get data from config.json
-with open("config.json") as f:
-    # load config data
-    config_data = json.load(f)
-    # set global variables
-    admin_role_id = config_data['admin_role_id']
-    default_embed_color = config_data['default_color']
-    # get filepaths
-    filepaths = []
-    for ext in config_data.get('extensions', []):
-        if ext['name'] == "Asker":
-            for file in ext['files']:
-                filepaths.append({f"{file}": f"{ext['path']}/{file}"})
+config_data = CanvasBasic.get_config_data()
+admin_role_id = config_data['admin_role_id']
+default_embed_color = config_data['default_color']
+filepaths = CanvasBasic.get_filepaths("Asker")
 
 
 # show data.json
@@ -33,7 +27,7 @@ class SettingsShowConfig(
 ):
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
-        await ctx.respond(File('extensions/ask/data.json'))
+        await ctx.respond(File(filepaths['data.json']))
 
 
 # ask a non-user specific question, get a response
@@ -49,8 +43,7 @@ class AskQuestion(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open(filepaths['data.json'], "r", encoding="utf-8") as f:
-                jdata = json.load(f)
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
             # show list of all keys if no key is given
             if self.key is None:
@@ -70,9 +63,11 @@ class AskQuestion(
                     color=Color.from_hex_code(default_embed_color)
                 )
 
+            # get response for key if key is in saved
             elif self.key in jdata['saved'].keys():
                 response = jdata['saved'][self.key]
 
+            # if key is not in saved
             else:
                 response = jdata['required']['question_key_404']
         except Exception as e:
@@ -95,12 +90,13 @@ class AskAboutUser(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
             # load json data
-            with open(filepaths['data.json'], "r", encoding="utf-8") as f:
-                jdata = json.load(f)
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
+            # get response for user if user is in saved
             if str(self.user) in jdata['saved'].keys():
                 response = jdata['saved'][str(self.user)]
 
+            # if user is not in saved
             else:
                 response = jdata['required']['user_key_404']
         except Exception as e:
@@ -123,14 +119,15 @@ class SettingsAddNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
-                jdata = json.load(f)
+            # load json data
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
+            # add new data to saved
             new_data = {self.key: self.value}
             jdata['saved'].update(new_data)
 
-            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
-                json.dump(jdata, f, indent=4, separators=(",", ": "))
+            # save data
+            CanvasBasic.save_data(filepaths['data.json'], jdata)
         except Exception as e:
             print(e)
             await ctx.respond(jdata['required']['question_add_failed'])
@@ -151,14 +148,15 @@ class SettingsAddUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
-                jdata = json.load(f)
+            # load json data
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
+            # add new data to saved
             new_data = {str(self.user): self.value}
             jdata['saved'].update(new_data)
 
-            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
-                json.dump(jdata, f, indent=4, separators=(",", ": "))
+            # save data
+            CanvasBasic.save_data(filepaths['data.json'], jdata)
         except Exception as e:
             print(e)
             await ctx.respond(jdata['required']['user_add_failed'])
@@ -178,13 +176,14 @@ class SettingsRemoveNormal(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
-                jdata = json.load(f)
+            # load json data
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
+            # remove key from saved
             del jdata['saved'][self.key]
 
-            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
-                json.dump(jdata, f, indent=4, separators=(",", ": "))
+            # save data
+            CanvasBasic.save_data(filepaths['data.json'], jdata)
         except Exception as e:
             print(e)
             await ctx.respond(jdata['required']['question_remove_failed'])
@@ -204,13 +203,14 @@ class SettingsRemoveUser(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         try:
-            with open(filepaths['data.json'], "r", encoding='utf-8') as f:
-                jdata = json.load(f)
+            # load json data
+            jdata = CanvasBasic.get_data(filepaths['data.json'])
 
+            # remove key from saved
             del jdata['saved'][str(self.user)]
 
-            with open(filepaths['data.json'], "w", encoding='utf-8') as f:
-                json.dump(jdata, f, indent=4, separators=(",", ": "))
+            # save data
+            CanvasBasic.save_data(filepaths['data.json'], jdata)
         except Exception as e:
             print(e)
             await ctx.respond(jdata['required']['user_remove_failed'])

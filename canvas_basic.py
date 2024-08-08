@@ -1,10 +1,11 @@
-from colorama import Fore, Style
-from tabulate import tabulate
 import json
 import os
 
+from colorama import Fore, Style
+from tabulate import tabulate
 
-# CanvasBootstrap class, helps main.py
+
+# helper class for the main menu
 class CanvasBootstrap:
     @staticmethod
     def convert_path(path, root):
@@ -187,7 +188,7 @@ class CanvasBootstrap:
         print(f"Extensions:\n{tabulate(ext_table_sorted, headers=['Name', 'Path', 'Status', 'Enabled'])}")
 
 
-# Helper class, helps extensions
+# extension helper class, basic functions for extensions
 class CanvasBasic:
     @staticmethod
     def get_data(file):

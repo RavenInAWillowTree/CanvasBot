@@ -1,9 +1,11 @@
-from helper import CanvasBootstrap as Helper
-from colorama import Fore, Style
-import hikari
-import lightbulb
 import json
 import os
+
+import hikari
+import lightbulb
+from colorama import Fore, Style
+
+from canvas_basic import CanvasBootstrap as Helper
 
 with open("config.json", "r") as f:
     config_data = json.load(f)
