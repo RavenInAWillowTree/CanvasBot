@@ -185,3 +185,74 @@ class CanvasBootstrap:
                     ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "Unknown error", f"{enabled}{Fore.RESET}"])
         ext_table_sorted = sorted(ext_table, key=lambda x: x[0])
         print(f"Extensions:\n{tabulate(ext_table_sorted, headers=['Name', 'Path', 'Status', 'Enabled'])}")
+
+
+# Helper class, helps extensions
+class CanvasBasic:
+    @staticmethod
+    def get_data(file):
+        """get data from a json file
+
+        Args:
+            file (str): file path
+
+        Returns:
+            dict: data from the file
+        """
+
+        with open(file, "r") as f:
+            return json.load(f)
+
+    @staticmethod
+    def save_data(file, data):
+        """save data to a json file
+
+        Args:
+            file (str): file path
+            data (dict): data to save
+        """
+
+        with open(file, "w") as f:
+            json.dump(data, f, indent=4, separators=(",", ": "))
+
+    @staticmethod
+    def get_config_data():
+        """get data from config.json
+
+        Returns:
+            dict: data from config.json
+        """
+
+        with open("config.json", "r") as f:
+            return json.load(f)
+
+    @staticmethod
+    def save_config_data(data):
+        """save data to config.json
+
+        Args:
+            data (dict): data to save
+        """
+
+        with open("config.json", "w") as f:
+            json.dump(data, f, indent=4, separators=(",", ": "))
+
+    @staticmethod
+    def get_filepaths(extension_name):
+        """get file paths from config.json for the extension
+
+        Args:
+            extension_name (str): name of the extension
+
+        Returns:
+            list: list of file paths
+        """
+
+        with open("config.json") as f:
+            config_data = json.load(f)
+            filepaths = []
+            for ext in config_data.get('extensions', []):
+                if ext['name'] == extension_name:
+                    for file in ext['files']:
+                        filepaths.append({f"{file}": f"{ext['path']}/{file}"})
+        return filepaths
