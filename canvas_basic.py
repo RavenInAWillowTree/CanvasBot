@@ -1,8 +1,10 @@
 import json
 import os
 
-from colorama import Fore, Style
-from tabulate import tabulate
+from rich.table import Table
+from rich.console import Console
+
+console = Console()
 
 
 # helper class for the main menu
@@ -39,13 +41,13 @@ class CanvasBootstrap:
             str: new display name
         """
 
-        print(f"Current display name: {bot_name}")
+        console.print(f"Current display name: {bot_name}")
         new_bot_name = input("Enter new name (or q to cancel):\n")
         if new_bot_name == "q":
-            print("Cancelled...")
+            console.print("Cancelled...")
             return bot_name
         else:
-            print("New display name saved")
+            console.print("New display name saved")
             return new_bot_name
 
     @staticmethod
@@ -103,7 +105,7 @@ class CanvasBootstrap:
 
             # quit and non-optional extensions
             if selected.lower() == "q":
-                print("Cancelled...")
+                console.print("[yellow]Cancelled...")
                 return config_data
 
             # toggle extension
@@ -116,7 +118,7 @@ class CanvasBootstrap:
                         found = True
                         break
             if not found:
-                print("Select a valid extension")
+                console.print("[red]Select a valid extension")
                 continue
             else:
                 return config_data
@@ -141,20 +143,20 @@ class CanvasBootstrap:
 
             # quit and non-optional extensions
             if selected.lower() == "q":
-                print("Cancelled...")
+                console.print("[yellow]Cancelled...")
                 return config_data
 
             # toggle extension
             for ext in config_data['extensions']:
                 if ext['name'].lower() == selected.lower():
                     name, desc, enabled = ext['name'], ext['desc'], ext['enabled']
-                    enabled, enabled_color = "Enabled" if enabled else "Disabled", Fore.GREEN if enabled else Fore.YELLOW
+                    enabled, enabled_color = "Enabled" if enabled else "Disabled", "green" if enabled else "yellow"
                     path = f"{ext['path']}/{ext['root_script']}"
                     ext_info = f"""
-    {Style.BRIGHT}{Fore.CYAN}{name}:{Style.RESET_ALL} {enabled_color}{enabled}{Fore.RESET}
-    {desc}
-    {Fore.LIGHTBLACK_EX}Path: {path}{Fore.RESET}
-    """
+[cyan bold]{name}:[/cyan bold] [{enabled_color}]{enabled}[/{enabled_color}]
+{desc}
+[gray]Path: {path}[/gray]
+"""
                     print(ext_info)
                     continue
 
@@ -171,21 +173,29 @@ class CanvasBootstrap:
         ext_table = []
         for ext in ext_list:
             enabled = "Enabled" if ext[3] else "Disabled"
-            enabled_color = Fore.GREEN if ext[3] else Fore.YELLOW
+            enabled_color = "green" if ext[3] else "yellow"
             match ext[2]:
                 case -1:
-                    ext_table.append([f"{Fore.CYAN}{ext[0]}", ext[1], "OK", f"Required{Fore.RESET}"])
+                    ext_table.append(["cyan", f"{ext[0]}", ext[1], "OK", f"Required"])
                 case 0:
-                    ext_table.append([f"{enabled_color}{ext[0]}", ext[1], "OK", f"{enabled}{Fore.RESET}"])
+                    ext_table.append([f"{enabled_color}", f"{ext[0]}", ext[1], "OK", f"{enabled}"])
                 case 1:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "Missing root script", f"{enabled}{Fore.RESET}"])
+                    ext_table.append(["red", f"{ext[0]}", ext[1], "Missing root script", f"{enabled}"])
                 case 2:
-                    ext_table.append(
-                        [f"{Fore.RED}{ext[0]}", f"Defined as {ext[1]}", "missing", f"{enabled}{Fore.RESET}"])
+                    ext_table.append(["red", f"{ext[0]}", f"Defined as {ext[1]}", "missing", f"{enabled}"])
                 case _:
-                    ext_table.append([f"{Fore.RED}{ext[0]}", ext[1], "Unknown error", f"{enabled}{Fore.RESET}"])
-        ext_table_sorted = sorted(ext_table, key=lambda x: x[0])
-        print(f"Extensions:\n{tabulate(ext_table_sorted, headers=['Name', 'Path', 'Status', 'Enabled'])}")
+                    ext_table.append(["red", f"{ext[0]}", ext[1], "Unknown error", f"{enabled}"])
+        ext_table_sorted = sorted(ext_table, key=lambda x: x[1])
+
+        table = Table(show_header=True, show_edge=False, header_style="bold")
+        table.add_column("Name")
+        table.add_column("Path")
+        table.add_column("Status")
+        table.add_column("Enabled")
+
+        for ext in ext_table_sorted:
+            table.add_row(ext[1], ext[2], ext[3], ext[4], style=ext[0])
+        console.print(table)
 
 
 # extension helper class, basic functions for extensions

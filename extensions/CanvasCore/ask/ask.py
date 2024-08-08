@@ -1,5 +1,3 @@
-import json
-
 import lightbulb
 from hikari import Embed, Color, File
 
@@ -111,7 +109,7 @@ class AskAboutUser(
 class SettingsAddNormal(
     lightbulb.SlashCommand,
     name="add-normal",
-    description="add or edit a non-user specific response",
+    description="add or edit a non-user specific response"
 ):
     key = lightbulb.string("key", "key for response")
     value = lightbulb.string("response", "response to key")

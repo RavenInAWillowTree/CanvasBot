@@ -3,18 +3,19 @@ import os
 
 import hikari
 import lightbulb
-from colorama import Fore, Style
+from rich.console import Console
 
+from canvas_basic import CanvasBasic
 from canvas_basic import CanvasBootstrap as Helper
 
-with open("config.json", "r") as f:
-    config_data = json.load(f)
+console = Console()
+
+config_data = CanvasBasic.get_config_data()
 
 # initial prints
-print(f"""-*---*-------*---*-
-{Style.BRIGHT}{config_data['displayName']}{Style.RESET_ALL}
-Made with {Fore.BLUE}CanvasBot{Fore.RESET}
-{Fore.CYAN}</{Fore.RESET}Hyjaxaru{Fore.CYAN}>{Fore.RESET} {Fore.RED}❤{Fore.RESET}
+console.print(f"""-*---*-------*---*-
+[bold cyan]{config_data['displayName']}[/bold cyan]
+Made with [bold blue]CanvasBot[/bold blue] and [red]❤[/red] by [cyan]</[/cyan]Hyjaxaru[cyan]>[/cyan]
 -*---*-------*---*-\n""")
 
 # show extensions
@@ -23,7 +24,7 @@ Helper.display_extension_table(config_data)
 # options menu
 while True:
     try:
-        print("""
+        console.print("""
 Bot Options:
 (1): Run Bot
 (2): Change Display Name
@@ -35,7 +36,7 @@ Bot Options:
 
         match choice:
             case 1:  # stop loop and run bot
-                print("Running bot...")
+                console.print("Running bot...")
                 break
             case 2:
                 config_data['displayName'] = Helper.change_display_name(config_data['displayName'])
@@ -43,10 +44,10 @@ Bot Options:
                 Helper.extension_info(config_data)
             case 4:
                 config_data = Helper.toggle_extension(config_data)
-            case 5 | "q":  # quit
+            case 5:  # quit
                 exit()
             case _:
-                print("Please choose from one of the options listed")
+                console.print("Please choose from one of the options listed")
 
         with open("config.json", "w") as f:
             json.dump(config_data, f, indent=4, separators=(",", ": "))
@@ -75,16 +76,16 @@ client = lightbulb.client_from_app(bot)
 # load extensions
 @bot.listen(hikari.StartingEvent)
 async def on_starting(_: hikari.StartingEvent) -> None:
-    for extension in config_data['extensions']:
+    for ext in config_data['extensions']:
         try:
-            if extension['enabled']:
-                path = Helper.convert_path(extension['root_script'])
+            if ext['enabled']:
+                path = Helper.convert_path(ext['path'], ext['root_script'])
                 await client.load_extensions(path)
             else:
-                print(f"{Fore.YELLOW}Extension '{extension['name']}' disabled, skipped{Fore.RESET}")
+                console.print(f"[yellow]Extension '{ext['name']}' disabled, skipped{Fore.RESET}")
         except Exception as e:
-            print(f"{Fore.RED}Extension '{extension['name']}' broken or could not be loaded, skipped"
-                  f"\n\t{e}{Fore.RESET}")
+            console.print(f"[red]Extension '{ext['name']}' broken or could not be loaded, skipped")
+            console.print(f"[red]Error: {e}")
 
     # start the bot
     await client.start()
